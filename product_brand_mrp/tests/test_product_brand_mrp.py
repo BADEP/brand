@@ -4,6 +4,8 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestMrpProduction(BaseCommon):
+    _test_user_groups = None
+
     def setUp(self):
         super().setUp()
         # Create a product brand
