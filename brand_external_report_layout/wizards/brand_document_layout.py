@@ -27,6 +27,9 @@ class BrandDocumentLayout(models.TransientModel):
     )
 
     font = fields.Selection(related="brand_id.font", readonly=False)
+    report_tables_id = fields.Selection(
+        related="brand_id.report_tables_id", readonly=False
+    )
     primary_color = fields.Char(related="brand_id.primary_color", readonly=False)
     secondary_color = fields.Char(related="brand_id.secondary_color", readonly=False)
     company_details = fields.Html(related="brand_id.company_details", readonly=False)
@@ -107,6 +110,7 @@ class BrandDocumentLayout(models.TransientModel):
         "layout_background",
         "layout_background_image",
         "company_details",
+        "report_tables_id",
     )
     def _compute_preview(self):
         styles = self._get_asset_style()

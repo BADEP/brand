@@ -3,25 +3,28 @@
 
 {
     "name": "Brand External Report Layout",
-    "summary": """
-        This module allows you to have a different layout by brand for your
-        external reports.""",
-    "version": "19.0.1.0.0",
+    "summary": (
+        "This module allows you to have a different layout by brand for your "
+        "external reports."
+    ),
+    "version": "20.0.1.0.0",
     "license": "AGPL-3",
     "author": "ACSONE SA/NV,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/brand",
     "depends": ["base", "brand", "web"],
     "data": [
-        "security/brand_document_layout.xml",
         "views/res_brand.xml",
         "views/report_template.xml",
         "wizards/brand_document_layout.xml",
+        "security/ir.access.csv",
     ],
     "maintainers": ["sbejaoui"],
     "assets": {
         "web.report_assets_common": [
-            "/brand_external_report_layout/"
-            "static/src/legacy/scss/asset_styles_brand_report.scss"
+            (
+                "/brand_external_report_layout/"
+                "static/src/legacy/scss/asset_styles_brand_report.scss"
+            )
         ]
     },
 }

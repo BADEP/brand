@@ -1,13 +1,13 @@
 # Copyright 2019 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-import base64
 import os
 from unittest.mock import patch
 
 import markupsafe
 
 from odoo.tests.common import TransactionCase, tagged
+from odoo.tools import BinaryBytes
 
 DEFAULT_PRIMARY = "#00ADEF"
 DEFAULT_SECONDARY = "#123456"
@@ -31,7 +31,9 @@ class TestBrandExternalReportLayout(TransactionCase):
         )
 
     def test_get_default_brand_logo(self):
-        self.assertEqual(self.brand.logo, self.brand._get_default_brand_logo())
+        self.assertEqual(
+            self.brand.logo.content, self.brand._get_default_brand_logo().content
+        )
 
     def test_brand_document_layout_onchange_brand_id(self):
         wizard = self.env["brand.document.layout"].create({"brand_id": self.brand.id})
@@ -67,7 +69,7 @@ class TestBrandExternalReportLayout(TransactionCase):
             module_path, "..", "static", "description", "icon.png"
         )
         with open(image_path, "rb") as image_file:
-            base64.b64encode(image_file.read())
+            BinaryBytes(image_file.read())
 
         self.brand.primary_color = False
         self.brand.secondary_color = False
@@ -90,7 +92,7 @@ class TestBrandExternalReportLayout(TransactionCase):
             module_path, "..", "static", "description", "icon.png"
         )
         with open(image_path, "rb") as image_file:
-            logo_data = base64.b64encode(image_file.read())
+            logo_data = BinaryBytes(image_file.read())
 
         wizard.logo = logo_data
         wizard.logo_primary_color = "#AAAAAA"

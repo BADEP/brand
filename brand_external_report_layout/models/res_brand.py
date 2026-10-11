@@ -1,30 +1,29 @@
 # Copyright 2019 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-import base64
 import os
 
 import odoo
 from odoo import api, fields, models, tools
+from odoo.tools import BinaryBytes
 
 
 class ResBrand(models.Model):
     _inherit = "res.brand"
 
     def _get_default_brand_logo(self):
-        return base64.b64encode(
-            open(
-                os.path.join(
-                    odoo.__path__[0],
-                    "addons",
-                    "base",
-                    "static",
-                    "img",
-                    "res_company_logo.png",
-                ),
-                "rb",
-            ).read()
-        )
+        with open(
+            os.path.join(
+                odoo.__path__[0],
+                "addons",
+                "base",
+                "static",
+                "img",
+                "res_company_logo.png",
+            ),
+            "rb",
+        ) as logo_file:
+            return BinaryBytes(logo_file.read(), filename="logo.png")
 
     logo = fields.Binary(
         related="partner_id.image_1920",
@@ -64,6 +63,19 @@ class ResBrand(models.Model):
         ],
         default="Lato",
     )
+    report_tables_id = fields.Selection(
+        [
+            ("light", "Light"),
+            ("boxed", "Boxed"),
+            ("bold", "Bold"),
+            ("striped", "Striped"),
+            ("bubble", "Bubble"),
+            ("column", "Column"),
+            ("compact", "Compact"),
+        ],
+        string="Table Design",
+        default="light",
+    )
     primary_color = fields.Char()
     secondary_color = fields.Char()
     company_details = fields.Html(
@@ -98,13 +110,13 @@ class ResBrand(models.Model):
             "context": context,
         }
 
-    def _get_asset_style_b64(self):
+    def _get_asset_style_raw(self):
         brand_styles = self.env["ir.qweb"]._render(
             "brand_external_report_layout.styles_brand_report",
             {"brand_ids": self.sudo().search([], limit=False)},
             raise_if_not_found=False,
         )
-        return base64.b64encode(brand_styles.encode())
+        return BinaryBytes(brand_styles.encode())
 
     def _update_asset_style(self):
         asset_attachment = self.env.ref(
@@ -114,9 +126,9 @@ class ResBrand(models.Model):
         if not asset_attachment:
             return
         asset_attachment = asset_attachment.sudo()
-        b64_val = self._get_asset_style_b64()
-        if b64_val != asset_attachment.datas:
-            asset_attachment.write({"datas": b64_val})
+        data = self._get_asset_style_raw()
+        if not asset_attachment.raw or data.content != asset_attachment.raw.content:
+            asset_attachment.raw = data
 
     @api.model
     def _get_style_fields(self):
