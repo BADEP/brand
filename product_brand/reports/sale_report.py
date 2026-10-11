@@ -18,7 +18,6 @@ class SaleReport(models.Model):
 
     def _group_by_sale(self):
         group_by = super()._group_by_sale()
-        group_by = f"""
+        return f"""
             {group_by},
             t.product_brand_id"""
-        return group_by

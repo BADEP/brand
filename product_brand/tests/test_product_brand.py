@@ -5,6 +5,8 @@ from .common import CommonCase
 
 
 class TestProductBrand(CommonCase):
+    _test_user_groups = None
+
     def test_products_count(self):
         self.assertEqual(
             self.product_brand.products_count, 0, "Error product count does not match"
