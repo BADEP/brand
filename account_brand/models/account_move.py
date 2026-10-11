@@ -2,12 +2,14 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
+import typing
+
 from odoo import api, fields, models
 
 
 class AccountMove(models.Model):
     _name = "account.move"
-    _inherit = ["account.move", "res.brand.mixin"]
+    _inherit: typing.ClassVar[list[str]] = ["account.move", "res.brand.mixin"]
 
     brand_id = fields.Many2one()
 
@@ -35,17 +37,11 @@ class AccountMove(models.Model):
                 rec_account = pab_model._get_partner_account_by_brand(
                     "asset_receivable", self.brand_id, partner
                 )
-                rec_account = (
-                    rec_account
-                    if rec_account
-                    else partner.property_account_receivable_id
-                )
+                rec_account = rec_account or partner.property_account_receivable_id
                 pay_account = pab_model._get_partner_account_by_brand(
                     "liability_payable", self.brand_id, partner
                 )
-                pay_account = (
-                    pay_account if pay_account else partner.property_account_payable_id
-                )
+                pay_account = pay_account or partner.property_account_payable_id
                 if invoice_type in ("in_invoice", "in_refund"):
                     account_id = pay_account
                 else:
