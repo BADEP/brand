@@ -9,8 +9,8 @@ from odoo.fields import Domain
 class ProductPricelist(models.Model):
     _inherit = "product.pricelist"
 
-    def _get_applicable_rules_domain(self, products, date, **kwargs):
-        res = super()._get_applicable_rules_domain(products, date, **kwargs)
+    def _get_applicable_rules_domain(self, products, *, date=None, **kwargs):
+        res = super()._get_applicable_rules_domain(products, date=date, **kwargs)
         if products._name == "product.template":
             brand_domain = ("product_brand_id", "in", products.product_brand_id.ids)
         else:
@@ -43,14 +43,19 @@ class ProductPricelistItem(models.Model):
         "belonging to this brand. Keep empty otherwise.",
     )
     applied_on = fields.Selection(
-        selection_add=[("25_brand", "Brand")], ondelete={"25_brand": "set default"}
-    )
-    display_applied_on = fields.Selection(
-        selection_add=[("25_brand", "Brand")], ondelete={"25_brand": "set default"}
+        selection_add=[("25_brand", "Brand")], ondelete={"25_brand": "set 3_global"}
     )
 
-    def _is_applicable_for(self, product, qty_in_product_uom):
-        res = super()._is_applicable_for(product, qty_in_product_uom)
+    @api.depends("product_brand_id")
+    def _compute_applied_on(self):
+        res = super()._compute_applied_on()
+        for item in self:
+            if item.product_brand_id and item.applied_on == "3_global":
+                item.applied_on = "25_brand"
+        return res
+
+    def _is_applicable_for(self, product, quantity, *, uom=None, **kwargs):
+        res = super()._is_applicable_for(product, quantity, uom=uom, **kwargs)
         if not res:
             return False
         if self.applied_on == "25_brand":
@@ -80,29 +85,6 @@ class ProductPricelistItem(models.Model):
                 item.name = self.env._("Brand: %s", item.product_brand_id.display_name)
         return res
 
-    @api.onchange("display_applied_on")
-    def _onchange_display_applied_on(self):
-        res = super()._onchange_display_applied_on()
-        for item in self:
-            if item.display_applied_on == "25_brand":
-                item.update(
-                    {
-                        "product_id": False,
-                        "product_tmpl_id": False,
-                        "categ_id": False,
-                        "applied_on": "25_brand",
-                    }
-                )
-        return res
-
-    @api.onchange("product_id", "product_tmpl_id", "categ_id", "product_brand_id")
-    def _onchange_rule_content(self):
-        res = super()._onchange_rule_content()
-        for item in self:
-            if item.product_brand_id:
-                item.applied_on = "25_brand"
-        return res
-
     @api.model_create_multi
     def create(self, vals_list):
         for values in vals_list:
@@ -111,7 +93,11 @@ class ProductPricelistItem(models.Model):
                 applied_on = values["applied_on"]
                 if applied_on == "25_brand":
                     values.update(
-                        dict(product_id=False, product_tmpl_id=False, categ_id=False)
+                        {
+                            "product_id": False,
+                            "product_tmpl_id": False,
+                            "categ_id": False,
+                        }
                     )
                 elif (
                     applied_on == "3_global"
@@ -119,7 +105,7 @@ class ProductPricelistItem(models.Model):
                     or applied_on == "1_product"
                     or applied_on == "0_product_variant"
                 ):
-                    values.update(dict(product_brand_id=False))
+                    values.update({"product_brand_id": False})
         return super().create(vals_list)
 
     def write(self, values):
@@ -128,7 +114,11 @@ class ProductPricelistItem(models.Model):
             applied_on = values["applied_on"]
             if applied_on == "25_brand":
                 values.update(
-                    dict(product_id=False, product_tmpl_id=False, categ_id=False)
+                    {
+                        "product_id": False,
+                        "product_tmpl_id": False,
+                        "categ_id": False,
+                    }
                 )
             elif (
                 applied_on == "3_global"
@@ -136,5 +126,5 @@ class ProductPricelistItem(models.Model):
                 or applied_on == "1_product"
                 or applied_on == "0_product_variant"
             ):
-                values.update(dict(product_brand_id=False))
+                values.update({"product_brand_id": False})
         return super().write(values)

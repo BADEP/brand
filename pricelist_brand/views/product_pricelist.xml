@@ -7,14 +7,17 @@
         <field name="model">product.pricelist.item</field>
         <field name="inherit_id" ref="product.product_pricelist_item_form_view" />
         <field name="arch" type="xml">
-            <field name="display_applied_on" position="after">
+            <xpath
+                expr="//group[@name='pricelist_rule_target']/field[@name='categ_id']"
+                position="before"
+            >
                 <field
                     name="product_brand_id"
-                    invisible="display_applied_on != '25_brand'"
-                    required="display_applied_on == '25_brand'"
                     options="{'no_create': True}"
+                    readonly="categ_id or product_tmpl_id or product_id"
+                    placeholder="All brands"
                 />
-            </field>
+            </xpath>
         </field>
     </record>
 </odoo>

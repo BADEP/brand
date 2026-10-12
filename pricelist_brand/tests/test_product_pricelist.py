@@ -43,7 +43,7 @@ class TestProductPricelist(TransactionCase):
                         0,
                         {
                             "name": "Default pricelist",
-                            "compute_price": "formula",
+                            "compute_price": "discount",
                             "base": "pricelist",
                             "base_pricelist_id": cls.list0.id,
                         },
@@ -55,7 +55,7 @@ class TestProductPricelist(TransactionCase):
                             "name": "10% Discount on Test Brand",
                             "applied_on": "25_brand",
                             "product_brand_id": cls.product_brand.id,
-                            "compute_price": "formula",
+                            "compute_price": "discount",
                             "base": "list_price",
                             "price_discount": 10,
                         },
@@ -70,7 +70,7 @@ class TestProductPricelist(TransactionCase):
                 {
                     "pricelist_id": self.pricelist.id,
                     "base": "list_price",
-                    "compute_price": "formula",
+                    "compute_price": "discount",
                     "applied_on": "25_brand",
                 }
             )
@@ -78,7 +78,7 @@ class TestProductPricelist(TransactionCase):
             {
                 "pricelist_id": self.pricelist.id,
                 "base": "list_price",
-                "compute_price": "formula",
+                "compute_price": "discount",
                 "applied_on": "25_brand",
                 "product_brand_id": self.product_brand.id,
             }
@@ -93,7 +93,7 @@ class TestProductPricelist(TransactionCase):
             {
                 "pricelist_id": self.pricelist.id,
                 "base": "list_price",
-                "compute_price": "formula",
+                "compute_price": "discount",
                 "applied_on": "2_product_category",
                 "categ_id": self.product_categ.id,
                 "product_brand_id": self.product_brand.id,
@@ -104,7 +104,7 @@ class TestProductPricelist(TransactionCase):
             {
                 "pricelist_id": self.pricelist.id,
                 "base": "list_price",
-                "compute_price": "formula",
+                "compute_price": "discount",
                 "applied_on": "1_product",
                 "product_tmpl_id": self.product.product_tmpl_id.id,
                 "product_brand_id": self.product_brand.id,
@@ -115,7 +115,7 @@ class TestProductPricelist(TransactionCase):
             {
                 "pricelist_id": self.pricelist.id,
                 "base": "list_price",
-                "compute_price": "formula",
+                "compute_price": "discount",
                 "applied_on": "0_product_variant",
                 "product_id": self.product.id,
                 "product_brand_id": self.product_brand.id,
@@ -166,28 +166,39 @@ class TestProductPricelist(TransactionCase):
             {
                 "pricelist_id": self.pricelist.id,
                 "base": "list_price",
-                "compute_price": "formula",
+                "compute_price": "discount",
                 "applied_on": "3_global",
                 "product_brand_id": self.product_brand.id,
             }
         )
         self.assertFalse(pricelist_item_global.product_brand_id)
 
-        # Lines 85-96: _onchange_display_applied_on
-        item_onchange_1 = self.env["product.pricelist.item"].new({})
-        item_onchange_1.display_applied_on = "25_brand"
-        item_onchange_1._onchange_display_applied_on()
-        self.assertEqual(item_onchange_1.applied_on, "25_brand")
-        self.assertFalse(item_onchange_1.product_id)
-
-        # Lines 100-104: _onchange_rule_content
-        item_onchange_2 = self.env["product.pricelist.item"].new({})
-        item_onchange_2.product_brand_id = self.product_brand.id
-        item_onchange_2._onchange_rule_content()
+        # applied_on is computed from the rule content in Odoo 20
+        item_onchange_2 = self.env["product.pricelist.item"].new(
+            {"product_brand_id": self.product_brand.id}
+        )
         self.assertEqual(item_onchange_2.applied_on, "25_brand")
+        self.assertFalse(item_onchange_2.product_id)
 
     def test_calculation_price_of_products_pricelist(self):
         """Test calculation of product price based on pricelist"""
+        raise AssertionError(
+            "DEBUG items=%s"
+            % [
+                (
+                    i.name,
+                    i.applied_on,
+                    i.product_brand_id.name,
+                    i.compute_price,
+                    i.price_discount,
+                    i.base,
+                    self.product.with_context(
+                        pricelist=self.pricelist.id, quantity=1
+                    )._get_contextual_price(),
+                )
+                for i in self.pricelist.item_ids
+            ]
+        )
         # Check sale price of branded product
         product_with_context = self.product.with_context(
             pricelist=self.pricelist.id, quantity=1
