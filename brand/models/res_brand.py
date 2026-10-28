@@ -1,8 +1,6 @@
 # Copyright 2019 ACSONE SA/NV
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 
-from typing import ClassVar
-
 from odoo import fields, models
 
 
@@ -10,7 +8,7 @@ class ResBrand(models.Model):
     _name = "res.brand"
     _description = "Brand"
 
-    _inherits: ClassVar[dict[str, str]] = {"res.partner": "partner_id"}
+    _inherits = {"res.partner": "partner_id"}  # noqa: RUF012
 
     partner_id = fields.Many2one(
         comodel_name="res.partner",
