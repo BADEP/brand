@@ -2,14 +2,12 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
-import typing
-
 from odoo import api, fields, models
 
 
 class AccountMove(models.Model):
     _name = "account.move"
-    _inherit: typing.ClassVar[list[str]] = ["account.move", "res.brand.mixin"]
+    _inherit = ["account.move", "res.brand.mixin"]  # noqa: RUF012
 
     brand_id = fields.Many2one()
 
