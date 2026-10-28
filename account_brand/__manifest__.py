@@ -5,7 +5,7 @@
 {
     "name": "Account Brand",
     "summary": "Send branded invoices and refunds",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Accounting Management",
     "website": "https://github.com/OCA/brand",
     "author": "Open Source Integrators,ACSONE SA/NV,Odoo Community Association (OCA)",
@@ -14,7 +14,7 @@
     "data": [
         "views/account_move_views.xml",
         "views/res_partner_account_brand.xml",
-        "security/res_partner_account_brand.xml",
+        "security/ir.access.csv",
     ],
     "installable": True,
     "development_status": "Beta",
